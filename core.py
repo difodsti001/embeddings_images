@@ -16,6 +16,7 @@ import time
 from io import BytesIO
 from pathlib import Path
 from typing import Optional
+import certifi
 
 import stamina
 import torch
@@ -24,12 +25,19 @@ from PIL import Image
 from pdf2image import convert_from_bytes, convert_from_path
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
+from dotenv import load_dotenv
+import ssl
+
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+
+os.environ["GRPC_DEFAULT_SSL_ROOTS_FILE_PATH"] = certifi.where()
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # ---------------------------------------------------------------------------
 # Configuracion
@@ -42,16 +50,17 @@ QDRANT_URL             = os.getenv("QDRANT_URL",             "http://91.99.108.2
 QDRANT_API_KEY         = os.getenv("QDRANT_API_KEY",         "")
 DEFAULT_COLLECTION     = os.getenv("DEFAULT_COLLECTION",     "imagenes_embeddings")
 SEARCH_LIMIT           = int(os.getenv("SEARCH_LIMIT",       "5"))
-POPPLER_PATH           = os.getenv("POPPLER_PATH",           r"C:\poppler-25.12.0\Library\bin")
+POPPLER_PATH           = os.getenv("POPPLER_PATH",           r"G:\IA\poppler-25.12.0\Library\bin")
+DEVICE_MAP             = os.getenv("DEVICE_MAP", " ")
 
 # LLM
 OPENAI_API_KEY  = os.getenv("OPENAI_API_KEY",  "")
-GEMINI_API_KEY  = os.getenv("GEMINI_API_KEY",  "AIzaSyCPmKJ2jGaWVZx0zaxBsvR2IUS0pyqmQjc")
+GEMINI_API_KEY  = os.getenv("GEMINI_API_KEY",  "")
 GPT_MODEL       = os.getenv("GPT_MODEL",        "gpt-4o-mini")
 GEMINI_MODEL    = os.getenv("GEMINI_MODEL",     "gemini-2.5-flash")
 
 # ---------------------------------------------------------------------------
-# Singletons
+# Singletons  
 # ---------------------------------------------------------------------------
 _colpali_model: Optional[ColPali] = None
 _colpali_processor: Optional[ColPaliProcessor] = None
