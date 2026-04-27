@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Buscador de Recursos Educativos — MINEDU</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f4f8;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;
+  --accent:#1d4ed8;--accent-light:#dbeafe;--accent2:#3b82f6;
+  --green:#16a34a;--green-light:#dcfce7;--red:#dc2626;--red-light:#fee2e2;
+  --yellow:#d97706;--yellow-light:#fef3c7;
+  --text:#1e293b;--muted:#64748b;--radius:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;min-height:100vh}
+header{background:var(--accent);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;box-shadow:0 2px 8px rgba(29,78,216,.3);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-weight:700;font-size:16px;line-height:1.2}
+.logo-text small{font-weight:400;font-size:12px;opacity:.8;display:block}
+.status-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);padding:6px 14px;border-radius:99px;font-size:12px}
+#status-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4)}
+#status-dot.ok{background:#4ade80}
+#status-dot.err{background:#f87171}
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 64px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px 20px;overflow-y:auto;position:sticky;top:64px;height:calc(100vh - 64px)}
+.sidebar-section{margin-bottom:28px}
+.sidebar-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:600}
+.filter-group{margin-bottom:12px}
+.filter-label{font-size:12px;color:var(--muted);margin-bottom:4px;display:block}
+select.filter-sel{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;background:var(--surface2);color:var(--text);outline:none}
+select.filter-sel:focus{border-color:var(--accent2)}
+.btn-clear-filters{font-size:12px;color:var(--accent2);background:none;border:none;cursor:pointer;padding:4px 0;text-decoration:underline}
+.stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.stat-mini{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;flex:1;text-align:center;min-width:60px}
+.stat-mini span{display:block;font-size:10px;font-weight:400;color:var(--muted)}
+.main{padding:28px 32px;overflow-y:auto}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}
+.card-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:18px}
+.search-wrap{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:4px;display:flex;gap:4px;margin-bottom:20px;box-shadow:var(--shadow);transition:border-color .2s}
+.search-wrap:focus-within{border-color:var(--accent2)}
+.search-mode-btns{display:flex;gap:2px;padding:2px}
+.smode-btn{padding:6px 12px;border-radius:7px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .15s}
+.smode-btn.active{background:var(--accent);color:#fff}
+.search-input-area{flex:1;display:flex;align-items:center}
+#main-query{flex:1;border:none;outline:none;font-size:15px;background:transparent;color:var(--text);padding:8px 4px}
+#main-query::placeholder{color:var(--muted)}
+.img-query-wrap{flex:1;display:none;align-items:center;gap:8px;padding:4px}
+.img-query-label{font-size:13px;color:var(--muted);cursor:pointer}
+.img-query-label strong{color:var(--accent2)}
+#img-query-input{display:none}
+#img-query-preview{height:36px;border-radius:6px;border:1px solid var(--border);display:none}
+.btn-search{padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-search:disabled{opacity:.5;cursor:not-allowed}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.results-count{font-size:13px;color:var(--muted)}
+.active-filters{display:flex;gap:6px;flex-wrap:wrap}
+.filter-tag{background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);animation:fadeUp .3s ease both;transition:box-shadow .2s,transform .2s}
+.result-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.12);transform:translateY(-2px)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.result-img-wrap{position:relative;background:#f1f5f9;height:190px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.result-img-wrap img{width:100%;height:100%;object-fit:contain}
+.rank-badge{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.result-body{padding:12px 14px}
+.result-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result-page{font-size:11px;color:var(--muted);margin-bottom:8px}
+.result-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px}
+.tag.tipo{background:#fef3c7;color:#d97706}
+.tag.nivel{background:#dcfce7;color:#16a34a}
+.tag.area{background:#ede9fe;color:#7c3aed}
+.tag.cat{background:#dbeafe;color:#1d4ed8}
+.result-actions{display:flex;gap:5px}
+.btn-action{flex:1;padding:5px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .15s;text-align:center}
+.btn-action:hover{border-color:var(--accent2);color:var(--accent2);background:var(--accent-light)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:24px;backdrop-filter:blur(4px);overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;max-width:920px;width:100%;margin:auto;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.modal-header-left{flex:1;min-width:0}
+.modal-header h3{font-size:15px;font-weight:700;margin-bottom:6px;word-break:break-word}
+.modal-header-tags{display:flex;gap:6px;flex-wrap:wrap}
+.modal-header-right{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.btn-modal-close{padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:13px;color:var(--muted)}
+.btn-modal-close:hover{background:var(--surface2)}
+.modal-img-wrap{background:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-img-wrap img{max-width:100%;height:auto;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.12)}
+/* Detalle del recurso */
+.modal-detail{padding:16px 20px;border-top:1px solid var(--border);display:none}
+.modal-detail.open{display:block}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.detail-field{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.detail-field .df-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.detail-field .df-value{font-size:12px;color:var(--text);line-height:1.4;word-break:break-word}
+.detail-field .df-value a{color:var(--accent2);text-decoration:underline}
+.detail-resumen{margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px}
+.detail-resumen .df-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.detail-resumen .df-value{font-size:13px;line-height:1.6}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.modal-footer .ref{font-size:12px;color:var(--muted);flex:1}
+.btn-similar{padding:8px 16px;border-radius:8px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent2);font-size:13px;font-weight:600;cursor:pointer}
+.btn-similar:hover{background:var(--accent);color:#fff}
+.btn-detail-toggle{padding:8px 16px;border-radius:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:13px;font-weight:600;cursor:pointer}
+.btn-detail-toggle:hover{background:var(--border)}
+
+/* Repositorio */
+.resource-table{width:100%;border-collapse:collapse;font-size:13px}
+.resource-table th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.resource-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.resource-table tr:hover td{background:var(--surface2)}
+.badge-indexed{background:var(--green-light);color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.badge-pending{background:var(--yellow-light);color:var(--yellow);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+
+/* Progress log SSE */
+.progress-log{background:#1e293b;border-radius:10px;padding:16px;max-height:280px;overflow-y:auto;font-family:monospace;font-size:12px;color:#94a3b8;margin-top:12px;display:none}
+.progress-log .log-ok{color:#4ade80}
+.progress-log .log-err{color:#f87171}
+.progress-log .log-info{color:#93c5fd}
+.progress-log .log-warn{color:#fbbf24}
+.progress-bar-wrap{margin-top:8px;display:none}
+.progress-bar{height:6px;border-radius:99px;background:var(--border);overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .3s}
+.progress-label{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Modal subida manual */
+.modal-upload{background:var(--surface);border-radius:16px;max-width:600px;width:100%;margin:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:modalIn .25s ease}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-field label{font-size:12px;color:var(--muted);font-weight:600}
+.form-field input,.form-field select,.form-field textarea{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface2);color:var(--text);outline:none}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--accent2)}
+.form-field.full{grid-column:1/-1}
+
+/* Misc */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){opacity:.85}
+.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent2)}
+.btn-outline:hover:not(:disabled){background:var(--accent-light)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.spinner.dark{border-color:var(--border);border-top-color:var(--accent)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:60px 24px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin:10px 0}
+.alert.success{background:var(--green-light);border:1px solid #86efac;color:var(--green)}
+.alert.error{background:var(--red-light);border:1px solid #fca5a5;color:var(--red)}
+.alert.info{background:var(--accent-light);border:1px solid #93c5fd;color:var(--accent)}
+.history-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;color:var(--text);font-size:13px;transition:background .15s}
+.history-item:hover{background:var(--surface2)}
+.hist-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.hist-del{color:var(--muted);background:none;border:none;cursor:pointer;opacity:0;padding:2px 4px}
+.history-item:hover .hist-del{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📚</div>
+    <div class="logo-text">Recursos Educativos<small>Motor de búsqueda visual · MINEDU</small></div>
+  </div>
+  <div class="status-pill">
+    <span id="status-dot"></span>
+    <span id="status-label">Conectando…</span>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Navegación</div>
+      <button class="nav-item active" onclick="showPanel('search',this)"><span>🔍</span> Buscador</button>
+      <button class="nav-item"        onclick="showPanel('repo',this)"><span>📂</span> Repositorio</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Repositorio</div>
+      <div class="stat-row">
+        <div class="stat-mini"><span>Total</span><span id="s-total">—</span></div>
+        <div class="stat-mini"><span>Indexados</span><span id="s-indexed">—</span></div>
+        <div class="stat-mini"><span>Pendientes</span><span id="s-pending">—</span></div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Filtros</div>
+      <div class="filter-group">
+        <label class="filter-label">Tipo de recurso</label>
+        <select class="filter-sel" id="f-tipo" onchange="applyFilterChange()"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Nivel</label>
+        <select class="filter-sel" id="f-nivel" onchange="applyFilterChange()"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Área</label>
+        <select class="filter-sel" id="f-area" onchange="applyFilterChange()"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Categoría</label>
+        <select class="filter-sel" id="f-cat" onchange="applyFilterChange()"><option value="">Todas</option></select>
+      </div>
+      <button class="btn-clear-filters" onclick="clearFilters()">✕ Limpiar filtros</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Búsquedas recientes</div>
+      <div id="history-list"><div style="font-size:12px;color:var(--muted)">Sin búsquedas aún</div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- PANEL BUSCADOR -->
+    <div id="panel-search" class="panel active">
+      <div class="search-wrap">
+        <div class="search-mode-btns">
+          <button class="smode-btn active" id="smode-text"  onclick="setSearchMode('text')">💬 Texto</button>
+          <button class="smode-btn"        id="smode-image" onclick="setSearchMode('image')">🖼️ Imagen</button>
+        </div>
+        <div class="search-input-area">
+          <input id="main-query" type="text" placeholder="¿Qué deseas encontrar? Ej: fracciones, ecosistemas, mapa del Perú…" onkeydown="if(event.key==='Enter')runSearch()"/>
+          <div class="img-query-wrap" id="img-query-wrap">
+            <label class="img-query-label" for="img-query-input">📎 <strong>Seleccionar imagen</strong></label>
+            <input type="file" id="img-query-input" accept="image/*" onchange="handleImgQuery(this)"/>
+            <img id="img-query-preview" src="" alt=""/>
+          </div>
+        </div>
+        <button class="btn-search" id="btn-search" onclick="runSearch()">
+          <span id="btn-search-inner">Buscar</span>
+        </button>
+      </div>
+      <div id="search-results">
+        <div class="empty-state">
+          <div class="icon">🔎</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:8px">Busca en el repositorio educativo</div>
+          <div style="font-size:13px;color:var(--muted)">Escribe una pregunta o tema, o sube una imagen de referencia</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL REPOSITORIO -->
+    <div id="panel-repo" class="panel">
+      <div class="card">
+        <div class="card-title">� Indexación de Recursos</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+          <button class="btn btn-outline" onclick="openUploadModal()">📤 Subir PDF manual</button>
+          <label class="btn btn-primary" style="cursor:pointer">
+            📊 Cargar Excel MINEDU
+            <input type="file" accept=".xlsx,.xls" style="display:none" id="excel-input" onchange="uploadExcel(this)"/>
+          </label>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          <strong>Opciones de indexación:</strong>
+          <ul style="margin-top:6px;margin-left:20px;line-height:1.6">
+            <li><strong>PDF Manual:</strong> Sube un PDF individual con metadata personalizada</li>
+            <li><strong>Excel MINEDU:</strong> Carga masiva desde Excel (filtra automáticamente LENGUA=Castellano, TIPO=PDF, ESTADO=Activo)</li>
+          </ul>
+        </div>
+        <div id="repo-alert" style="display:none"></div>
+        <!-- Progreso SSE -->
+        <div class="progress-bar-wrap" id="progress-wrap">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:12px;color:var(--muted)" id="progress-label">Procesando…</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:12px;font-weight:600" id="progress-pct">0%</span>
+              <button class="btn btn-outline" id="btn-cancel-excel" onclick="cancelExcelProcessing()" style="padding:5px 12px;font-size:11px">⏹️ Cancelar</button>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+        <div class="progress-log" id="progress-log"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Recursos registrados</div>
+        <div id="resource-table-wrap">
+          <div class="empty-state"><div class="icon">📭</div><div>Sin recursos. Escanea la carpeta o carga el Excel.</div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL VISOR DE PÁGINA -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <h3 id="modal-title">Página del recurso</h3>
+        <div class="modal-header-tags" id="modal-tags"></div>
+      </div>
+      <div class="modal-header-right">
+        <button class="btn-detail-toggle" onclick="toggleDetail()">📋 Ver detalle</button>
+        <button class="btn-similar" onclick="searchSimilarFromModal()">🔍 Similares</button>
+        <button class="btn-modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-img-wrap">
+      <img id="modal-img" src="" alt="Página completa"/>
+    </div>
+    <!-- Detalle colapsable -->
+    <div class="modal-detail" id="modal-detail">
+      <div class="detail-grid" id="detail-grid"></div>
+      <div class="detail-resumen" id="detail-resumen" style="display:none">
+        <div class="df-label">Resumen</div>
+        <div class="df-value" id="detail-resumen-text"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="ref" id="modal-ref"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUBIDA MANUAL -->
+<div class="modal-overlay" id="modal-upload" onclick="closeUploadOutside(event)">
+  <div class="modal-upload">
+    <h3 style="margin-bottom:20px;font-size:16px">📤 Subir PDF Manual</h3>
+    <div class="form-grid">
+      <div class="form-field full">
+        <label>Archivo PDF *</label>
+        <input type="file" id="manual-file" accept=".pdf"/>
+      </div>
+      <div class="form-field full">
+        <label>Título</label>
+        <input type="text" id="m-titulo" placeholder="Título del recurso"/>
+      </div>
+      <div class="form-field">
+        <label>Tipo de recurso</label>
+        <input type="text" id="m-tipo" placeholder="Ej: Fascículo, Guía…"/>
+      </div>
+      <div class="form-field">
+        <label>Categoría</label>
+        <input type="text" id="m-cat" placeholder="Ej: Material Educativo"/>
+      </div>
+      <div class="form-field">
+        <label>Nivel</label>
+        <input type="text" id="m-nivel" placeholder="Ej: Primaria"/>
+      </div>
+      <div class="form-field">
+        <label>Área</label>
+        <input type="text" id="m-area" placeholder="Ej: Matemática"/>
+      </div>
+      <div class="form-field">
+        <label>Autor</label>
+        <input type="text" id="m-autor" placeholder="Autor o institución"/>
+      </div>
+      <div class="form-field">
+        <label>Año de edición</label>
+        <input type="text" id="m-anio" placeholder="Ej: 2024"/>
+      </div>
+      <div class="form-field full">
+        <label>Resumen</label>
+        <textarea id="m-resumen" rows="3" placeholder="Descripción breve del contenido…"></textarea>
+      </div>
+    </div>
+    <div id="upload-alert" style="display:none;margin-top:12px"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeUploadModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-upload-manual" onclick="submitManual()">⚡ Indexar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:8001';
+let searchMode = 'text';
+let lastQuery  = '';
+let modalHit   = null;  // hit activo en el modal de visor
+const HISTORY_KEY = 'edu_search_history_v2';
+
+window.addEventListener('DOMContentLoaded', () => {
+  checkHealth(); loadFilters(); loadRepoStats(); renderHistory();
+});
+
+// ── Health ────────────────────────────────────────────────────────────────────
+async function checkHealth() {
+  const dot = document.getElementById('status-dot');
+  const lbl = document.getElementById('status-label');
+  try {
+    const r = await fetch(`${API}/health`);
+    if (r.ok) { dot.className='ok'; const d=await r.json(); lbl.textContent=`Activo · ${d.collection}`; }
+    else throw new Error();
+  } catch { dot.className='err'; lbl.textContent='Sin conexión'; }
+}
+
+// ── Navegacion ────────────────────────────────────────────────────────────────
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name==='repo') loadResourceTable();
+}
+function goToSearch() {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-search').classList.add('active');
+  document.querySelector('.nav-item').classList.add('active');
+}
+
+// ── Filtros ───────────────────────────────────────────────────────────────────
+async function loadFilters() {
+  try {
+    const r = await fetch(`${API}/api/edu/resources/filters`);
+    const d = await r.json();
+    populate('f-tipo',  d.tipos_recurso, 'Todos');
+    populate('f-nivel', d.niveles,       'Todos');
+    populate('f-area',  d.areas,         'Todas');
+    populate('f-cat',   d.categorias,    'Todas');
+  } catch {}
+}
+function populate(id, items, ph) {
+  const sel = document.getElementById(id), cur = sel.value;
+  sel.innerHTML = `<option value="">${ph}</option>` +
+    items.map(v=>`<option value="${v}"${v===cur?' selected':''}>${v}</option>`).join('');
+}
+function applyFilterChange() { if (lastQuery) runSearch(); }
+function clearFilters() {
+  ['f-tipo','f-nivel','f-area','f-cat'].forEach(id=>document.getElementById(id).value='');
+  if (lastQuery) runSearch();
+}
+function getFilters() {
+  return {
+    tipo_recurso: document.getElementById('f-tipo').value  || null,
+    nivel:        document.getElementById('f-nivel').value || null,
+    area:         document.getElementById('f-area').value  || null,
+    categoria:    document.getElementById('f-cat').value   || null,
+  };
+}
+
+// ── Modo busqueda ─────────────────────────────────────────────────────────────
+function setSearchMode(mode) {
+  searchMode = mode;
+  document.getElementById('smode-text').classList.toggle('active',  mode==='text');
+  document.getElementById('smode-image').classList.toggle('active', mode==='image');
+  document.getElementById('main-query').style.display     = mode==='text'  ? '' : 'none';
+  document.getElementById('img-query-wrap').style.display = mode==='image' ? 'flex' : 'none';
+}
+function handleImgQuery(input) {
+  const p = document.getElementById('img-query-preview');
+  if (input.files[0]) { p.src=URL.createObjectURL(input.files[0]); p.style.display='block'; }
+}
+
+// ── Busqueda principal ────────────────────────────────────────────────────────
+async function runSearch() {
+  const filters = getFilters();
+  let endpoint, form = new FormData();
+
+  if (searchMode==='text') {
+    const q = document.getElementById('main-query').value.trim();
+    if (!q) return;
+    lastQuery = q;
+    addToHistory(q);
+    form.append('query', q);
+    form.append('limit', 5);
+    for (const [k,v] of Object.entries(filters)) if (v) form.append(k, v);
+    endpoint = `${API}/api/edu/search/text`;
+  } else {
+    const file = document.getElementById('img-query-input').files[0];
+    if (!file) return alert('Selecciona una imagen primero.');
+    lastQuery = `[imagen: ${file.name}]`;
+    form.append('file', file);
+    form.append('limit', 5);
+    for (const [k,v] of Object.entries(filters)) if (v) form.append(k, v);
+    endpoint = `${API}/api/edu/search/image`;
+  }
+
+  setSearchLoading(true);
+  showResultsLoading();
+  try {
+    const r = await fetch(endpoint, {method:'POST', body:form});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail ?? 'Error');
+    renderResults(d);
+  } catch(err) {
+    document.getElementById('search-results').innerHTML =
+      `<div class="empty-state"><div class="icon">⚠️</div><div>${escHtml(err.message)}</div></div>`;
+  } finally { setSearchLoading(false); }
+}
+
+// ── Busqueda por pagina similar ───────────────────────────────────────────────
+async function searchSimilarFromModal() {
+  // Capturar el base64 ANTES de cerrar el modal (modalHit se limpia al cerrar)
+  const b64 = modalHit?.image_base64;
+  const ref  = modalHit ? `pág. ${modalHit.page_number ?? '?'} de ${modalHit.source_file ?? ''}` : '';
+  if (!b64) { alert('Esta página no tiene imagen disponible para buscar similares.'); return; }
+
+  closeModal();
+  goToSearch();
+  setSearchLoading(true);
+  showResultsLoading();
+
+  try {
+    const form = new FormData();
+    form.append('image_base64', b64);
+    form.append('limit', 5);
+    const r = await fetch(`${API}/api/edu/search/similar`, {method:'POST', body:form});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail ?? 'Error');
+    renderResults(d, `Páginas similares a ${ref}`);
+  } catch(err) {
+    document.getElementById('search-results').innerHTML =
+      `<div class="empty-state"><div class="icon">⚠️</div><div>${escHtml(err.message)}</div></div>`;
+  } finally { setSearchLoading(false); }
+}
+
+async function searchSimilarDirect(idx) {
+  const hits = window._lastHits ?? [];
+  const hit  = hits[idx];
+  if (!hit) return;
+  // Asignar modalHit antes de llamar a searchSimilarFromModal
+  modalHit = hit;
+  await searchSimilarFromModal();
+}
+
+function setSearchLoading(on) {
+  document.getElementById('btn-search').disabled = on;
+  document.getElementById('btn-search-inner').innerHTML = on ? `<span class="spinner"></span>` : 'Buscar';
+}
+
+// ── Render resultados ─────────────────────────────────────────────────────────
+function renderResults(data, customTitle=null) {
+  const section = document.getElementById('search-results');
+  const hits = data.results ?? [];
+  if (!hits.length) {
+    section.innerHTML=`<div class="empty-state"><div class="icon">😕</div><div>No se encontraron recursos.<br><small>Prueba con otras palabras o ajusta los filtros.</small></div></div>`;
+    return;
+  }
+  window._lastHits = hits;
+
+  const ftags = Object.entries(data.filters_applied??{})
+    .filter(([,v])=>v).map(([k,v])=>`<span class="filter-tag">${k}: ${v}</span>`).join('');
+  const title = customTitle ?? `${hits.length} resultado${hits.length>1?'s':''} encontrado${hits.length>1?'s':''}`;
+
+  const cards = hits.map((h,i) => {
+    const src  = h.image_base64 ? `data:image/png;base64,${h.image_base64}` : '';
+    const tags = [
+      h.tipo_recurso ? `<span class="tag tipo">${escHtml(h.tipo_recurso)}</span>` : '',
+      h.nivel        ? `<span class="tag nivel">${escHtml(h.nivel)}</span>`        : '',
+      h.area         ? `<span class="tag area">${escHtml(h.area)}</span>`          : '',
+      h.categoria    ? `<span class="tag cat">${escHtml(h.categoria)}</span>`      : '',
+    ].join('');
+    const displayTitle = h.titulo || h.source_file || 'Recurso';
+    return `
+      <div class="result-card">
+        <div class="result-img-wrap" onclick="openModal(${i})" title="Ver página completa">
+          ${src ? `<img src="${src}" alt="pág ${h.page_number}" loading="lazy"/>` : '<div style="padding:40px;color:#94a3b8;text-align:center">Sin imagen</div>'}
+          <div class="rank-badge">#${i+1}</div>
+        </div>
+        <div class="result-body">
+          <div class="result-title" title="${escHtml(displayTitle)}">📄 ${escHtml(displayTitle)}</div>
+          <div class="result-page">Página ${h.page_number??'—'} de ${h.total_pages??'—'}</div>
+          ${tags ? `<div class="result-tags">${tags}</div>` : ''}
+          <div class="result-actions">
+            <button class="btn-action" onclick="openModal(${i})">🔍 Ver página</button>
+            <button class="btn-action" onclick="searchSimilarDirect(${i})">🔁 Similares</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  section.innerHTML = `
+    <div class="results-header">
+      <div class="results-count">${title}</div>
+      <div class="active-filters">${ftags}</div>
+    </div>
+    <div class="results-grid">${cards}</div>`;
+}
+
+function showResultsLoading() {
+  document.getElementById('search-results').innerHTML=`
+    <div class="empty-state">
+      <span class="spinner dark" style="width:32px;height:32px;border-width:3px"></span>
+      <div style="margin-top:16px;color:var(--muted)">Buscando recursos relevantes…</div>
+    </div>`;
+}
+
+// ── Modal visor ───────────────────────────────────────────────────────────────
+function openModal(idx) {
+  const hit = (window._lastHits??[])[idx];
+  if (!hit) return;
+  modalHit = {...hit};  // copia para evitar referencias mutables
+
+  const displayTitle = hit.titulo || hit.source_file || 'Recurso';
+  document.getElementById('modal-title').textContent = displayTitle;
+  document.getElementById('modal-tags').innerHTML = [
+    hit.tipo_recurso ? `<span class="tag tipo">${escHtml(hit.tipo_recurso)}</span>` : '',
+    hit.nivel        ? `<span class="tag nivel">${escHtml(hit.nivel)}</span>`        : '',
+    hit.area         ? `<span class="tag area">${escHtml(hit.area)}</span>`          : '',
+    hit.categoria    ? `<span class="tag cat">${escHtml(hit.categoria)}</span>`      : '',
+  ].join('');
+
+  document.getElementById('modal-img').src =
+    hit.image_base64 ? `data:image/png;base64,${hit.image_base64}` : '';
+
+  document.getElementById('modal-ref').textContent =
+    `📄 ${hit.source_file??''} · Página ${hit.page_number??'?'} de ${hit.total_pages??'?'}`;
+
+  // Construir detalle
+  const detailFields = [
+    {label:'Archivo',          val: hit.source_file},
+    {label:'Autor',            val: hit.autor},
+    {label:'Año edición',      val: hit.anio_edicion},
+    {label:'Modalidad',        val: hit.modalidad},
+    {label:'Servicio educativo', val: hit.servicio_educativo},
+    {label:'Lengua/Idioma',    val: hit.lengua_idioma},
+    {label:'Sub-categoría',    val: hit.sub_categoria},
+    {label:'Competencias',     val: hit.competencias},
+    {label:'Derecho/Autoridad', val: hit.derecho_autoridad},
+  ].filter(f => f.val);
+
+  document.getElementById('detail-grid').innerHTML = detailFields.map(f => `
+    <div class="detail-field">
+      <div class="df-label">${escHtml(f.label)}</div>
+      <div class="df-value">${f.isLink
+        ? `<a href="${escHtml(f.val)}" target="_blank" rel="noopener">Ver recurso original ↗</a>`
+        : escHtml(f.val)}</div>
+    </div>`).join('');
+
+  if (hit.resumen) {
+    document.getElementById('detail-resumen').style.display = 'block';
+    document.getElementById('detail-resumen-text').textContent = hit.resumen;
+  } else {
+    document.getElementById('detail-resumen').style.display = 'none';
+  }
+
+  // Cerrar detalle al abrir modal
+  document.getElementById('modal-detail').classList.remove('open');
+  document.querySelector('.btn-detail-toggle').textContent = '📋 Ver detalle';
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function toggleDetail() {
+  const detail = document.getElementById('modal-detail');
+  const btn    = document.querySelector('.btn-detail-toggle');
+  const isOpen = detail.classList.toggle('open');
+  btn.textContent = isOpen ? '📋 Ocultar detalle' : '📋 Ver detalle';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalHit = null;
+}
+function closeModalOutside(e) {
+  if (e.target===document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── Modal subida manual ───────────────────────────────────────────────────────
+function openUploadModal()  { document.getElementById('modal-upload').classList.add('open'); }
+function closeUploadModal() { document.getElementById('modal-upload').classList.remove('open'); }
+function closeUploadOutside(e) { if (e.target===document.getElementById('modal-upload')) closeUploadModal(); }
+
+async function submitManual() {
+  const fileInput = document.getElementById('manual-file');
+  const file = fileInput.files[0];
+  if (!file) return showUploadAlert('Selecciona un archivo PDF.','error');
+
+  const btn = document.getElementById('btn-upload-manual');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Indexando…';
+
+  const form = new FormData();
+  form.append('file',         file);
+  form.append('titulo',       document.getElementById('m-titulo').value);
+  form.append('tipo_recurso', document.getElementById('m-tipo').value);
+  form.append('nivel',        document.getElementById('m-nivel').value);
+  form.append('area',         document.getElementById('m-area').value);
+  form.append('categoria',    document.getElementById('m-cat').value);
+  form.append('autor',        document.getElementById('m-autor').value);
+  form.append('anio_edicion', document.getElementById('m-anio').value);
+  form.append('resumen',      document.getElementById('m-resumen').value);
+
+  try {
+    const r = await fetch(`${API}/api/edu/repository/upload`, {method:'POST', body:form});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail ?? 'Error');
+    showUploadAlert(`✅ ${file.name}: ${d.pages_indexed} páginas indexadas.`,'success');
+    loadRepoStats(); loadFilters();
+    setTimeout(closeUploadModal, 2000);
+  } catch(e) { showUploadAlert(`❌ ${e.message}`,'error'); }
+  finally { btn.disabled=false; btn.textContent='⚡ Indexar'; }
+}
+function showUploadAlert(msg, type) {
+  const el = document.getElementById('upload-alert');
+  el.textContent=msg; el.className=`alert ${type}`; el.style.display='block';
+}
+
+// ── Repositorio ───────────────────────────────────────────────────────────────
+async function loadRepoStats() {
+  try {
+    const r = await fetch(`${API}/api/edu/resources`);
+    const list = await r.json();
+    const indexed = list.filter(x=>x.indexed).length;
+    document.getElementById('s-total').textContent   = list.length;
+    document.getElementById('s-indexed').textContent = indexed;
+    document.getElementById('s-pending').textContent = list.length - indexed;
+  } catch {}
+}
+
+async function loadResourceTable() {
+  const wrap = document.getElementById('resource-table-wrap');
+  wrap.innerHTML=`<div class="empty-state"><span class="spinner dark"></span></div>`;
+  try {
+    const r = await fetch(`${API}/api/edu/resources`);
+    const list = await r.json();
+    if (!list.length) {
+      wrap.innerHTML=`<div class="empty-state"><div class="icon">📭</div><div>Sin recursos registrados.</div></div>`;
+      return;
+    }
+    const rows = list.map(res=>`
+      <tr>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(res.titulo||res.filename)}">${escHtml(res.titulo||res.filename)}</td>
+        <td>${res.pages||'—'}</td>
+        <td>${res.tipo_recurso||'—'}</td>
+        <td>${res.nivel||'—'}</td>
+        <td>${res.area||'—'}</td>
+        <td>${res.categoria||'—'}</td>
+        <td><span class="${res.indexed?'badge-indexed':'badge-pending'}">${res.indexed?'✓ Indexado':'Pendiente'}</span></td>
+      </tr>`).join('');
+    wrap.innerHTML=`
+      <div style="overflow-x:auto">
+      <table class="resource-table">
+        <thead><tr><th>Título / Archivo</th><th>Págs.</th><th>Tipo</th><th>Nivel</th><th>Área</th><th>Categoría</th><th>Estado</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+  } catch(e) { wrap.innerHTML=`<div class="alert error">Error: ${escHtml(e.message)}</div>`; }
+}
+
+async function scanRepo() {
+  showRepoAlert('Escaneando carpeta…','info');
+  try {
+    const r = await fetch(`${API}/api/edu/repository/scan`,{method:'POST'});
+    const d = await r.json();
+    let msg = `✅ Escaneo: ${d.total} recursos (${d.new_found} nuevos, ${d.pending} pendientes)`;
+    if (d.removed>0) msg += `, ${d.removed} eliminados del índice`;
+    showRepoAlert(msg,'success');
+    loadRepoStats(); loadResourceTable(); loadFilters();
+  } catch(e) { showRepoAlert(`❌ ${e.message}`,'error'); }
+}
+
+async function indexRepo() {
+  document.getElementById('btn-index').disabled=true;
+  showRepoAlert('Indexando PDFs pendientes…','info');
+  try {
+    const r = await fetch(`${API}/api/edu/repository/index`,{method:'POST'});
+    const d = await r.json();
+    showRepoAlert(
+      `✅ ${d.processed} archivos, ${d.pages_total} páginas.${d.errors.length?' Errores: '+d.errors.map(e=>e.file).join(', '):''}`,
+      d.errors.length?'error':'success');
+    loadRepoStats(); loadResourceTable(); loadFilters();
+  } catch(e) { showRepoAlert(`❌ ${e.message}`,'error'); }
+  finally { document.getElementById('btn-index').disabled=false; }
+}
+
+// ── Excel MINEDU con SSE ──────────────────────────────────────────────────────
+async function uploadExcel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value='';
+
+  showRepoAlert(`Procesando Excel: ${file.name}…`, 'info');
+  const log    = document.getElementById('progress-log');
+  const wrap   = document.getElementById('progress-wrap');
+  const fill   = document.getElementById('progress-fill');
+  const pct    = document.getElementById('progress-pct');
+  const label  = document.getElementById('progress-label');
+
+  log.innerHTML=''; log.style.display='block'; wrap.style.display='block';
+  fill.style.width='0%'; pct.textContent='0%';
+
+  const form = new FormData();
+  form.append('file', file);
+  form.append('max_concurrent', '4');
+
+  try {
+    const r = await fetch(`${API}/api/edu/repository/excel/stream`, {method:'POST', body:form});
+    if (!r.ok) { const e=await r.json(); throw new Error(e.detail??'Error'); }
+
+    const reader = r.body.getReader();
+    const dec    = new TextDecoder();
+    let buf = '';
+    let total = 0, done_count = 0;
+
+    while (true) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream:true});
+
+      // Parsear eventos SSE (data: {...}\n\n)
+      const parts = buf.split('\n\n');
+      buf = parts.pop() ?? '';
+
+      for (const part of parts) {
+        const line = part.trim();
+        if (!line.startsWith('data:')) continue;
+        try {
+          const ev = JSON.parse(line.slice(5).trim());
+
+          if (ev.type === 'start') {
+            total = ev.total;
+            addLog(`🔵 ${ev.msg}`, 'log-info');
+            label.textContent = `0 / ${total} recursos procesados`;
+          } else if (ev.type === 'ok') {
+            done_count++;
+            addLog(`✓ ${ev.msg}`, 'log-ok');
+            updateProgress(done_count, total, label, fill, pct);
+          } else if (ev.type === 'skipped') {
+            done_count++;
+            addLog(`${ev.msg}`, 'log-warn');
+            updateProgress(done_count, total, label, fill, pct);
+          } else if (ev.type === 'cancelled') {
+            addLog(`${ev.msg}`, 'log-warn');
+          } else if (ev.type === 'error') {
+            done_count++;
+            addLog(`✗ ${ev.msg}`, 'log-err');
+            updateProgress(done_count, total, label, fill, pct);
+          } else if (ev.type === 'done') {
+            addLog(`\n🎉 ${ev.msg}`, 'log-info');
+            fill.style.width='100%'; pct.textContent='100%';
+            const alertMsg = ev.cancelled ? `⏹️ ${ev.msg}` : `✅ ${ev.msg}`;
+            showRepoAlert(alertMsg, ev.cancelled || ev.failed>0?'error':'success');
+            loadRepoStats(); loadResourceTable(); loadFilters();
+          }
+        } catch {}
+      }
+    }
+  } catch(err) {
+    showRepoAlert(`❌ ${err.message}`, 'error');
+    addLog(`ERROR: ${err.message}`, 'log-err');
+  }
+}
+
+function addLog(msg, cls) {
+  const log = document.getElementById('progress-log');
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function updateProgress(done, total, label, fill, pct) {
+  const p = total > 0 ? Math.round((done/total)*100) : 0;
+  fill.style.width = p+'%';
+  pct.textContent  = p+'%';
+  label.textContent = `${done} / ${total} recursos procesados`;
+}
+
+async function cancelExcelProcessing() {
+  try {
+    const r = await fetch(`${API}/api/edu/repository/cancel`, {method:'POST'});
+    if (!r.ok) throw new Error('Error al cancelar');
+    // El procesamiento se detendrá en el siguiente ciclo
+    addLog('\n⏹️ Solicitando cancelación...', 'log-info');
+  } catch(err) {
+    addLog(`ERROR cancelando: ${err.message}`, 'log-err');
+  }
+}
+
+function showRepoAlert(msg, type) {
+  const el = document.getElementById('repo-alert');
+  el.textContent=msg; el.className=`alert ${type}`; el.style.display='block';
+}
+
+// ── Historial ─────────────────────────────────────────────────────────────────
+function addToHistory(q) {
+  let h = JSON.parse(localStorage.getItem(HISTORY_KEY)??'[]');
+  h = [q,...h.filter(x=>x!==q)].slice(0,10);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  renderHistory();
+}
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const h = JSON.parse(localStorage.getItem(HISTORY_KEY)??'[]');
+  if (!h.length) { list.innerHTML=`<div style="font-size:12px;color:var(--muted)">Sin búsquedas aún</div>`; return; }
+  list.innerHTML = h.map((q,i)=>`
+    <div class="history-item" onclick="repeatSearch(${i})">
+      <span style="font-size:12px;color:var(--muted)">↩</span>
+      <span class="hist-text">${escHtml(q)}</span>
+      <button class="hist-del" onclick="deleteHistory(event,${i})">✕</button>
+    </div>`).join('');
+}
+function repeatSearch(idx) {
+  const h=JSON.parse(localStorage.getItem(HISTORY_KEY)??'[]');
+  const q=h[idx]; if(!q) return;
+  setSearchMode('text');
+  document.getElementById('main-query').value=q;
+  goToSearch(); runSearch();
+}
+function deleteHistory(e,idx) {
+  e.stopPropagation();
+  let h=JSON.parse(localStorage.getItem(HISTORY_KEY)??'[]');
+  h.splice(idx,1);
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(h));
+  renderHistory();
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

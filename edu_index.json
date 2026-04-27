@@ -1,0 +1,49 @@
+{
+  "resources": {
+    "Fasc_culo_U2-S2__Curso_Metodolog_as_activas_para_el_desarrol.pdf": {
+      "path": "G:\\IA\\embeddings_images\\repositorio\\Fasc_culo_U2-S2__Curso_Metodolog_as_activas_para_el_desarrol.pdf",
+      "indexed": true,
+      "indexed_at": "2026-04-24T16:02:06",
+      "pages": 15,
+      "categoria": "Recursos de Acciones Formativas",
+      "sub_categoria": "Conocimientos pedagógicos y disciplinares",
+      "sub_categoria_2": "Programa de Actualización docente",
+      "tipo_recurso": "Fascículo",
+      "titulo": "Fascículo U2-S2: Curso Metodologías activas para el desarrollo de habilidades de pensamiento de orden superior",
+      "modalidad": "Educación Básica",
+      "servicio_educativo": "Inicial, Primaria, Secundaria, Ámbito Rural, Intercultural Bilingüe, Básica Especial, Básica Alternativa",
+      "ruta_banner": "Resources\\Files\\acfm\\20250827194217_sifods_docente-fondo (1) (1).png",
+      "autor": "Perú. Ministerio de Educación",
+      "anio_edicion": "2025",
+      "lengua_idioma": "Castellano",
+      "fecha_publicacion": "28/08/2025",
+      "tipo_enlace": "PDF",
+      "enlace": "https://formacionenservicio.minedu.gob.pe/cursos_2025/Programa-OAM/fasciculos_PAD_OAM/Curso2_fasciculo_U2S2.pdf",
+      "resumen": "El curso tiene como propósito fortalecer las competencias profesionales de los docentes en la conducción del proceso de enseñanza y aprendizaje a través del uso de metodologías activas para promover en los estudiantes habilidades de pensamiento de orden superior.",
+      "estado": "Activo",
+      "estrategia": "Oferta abierta y masiva"
+    },
+    "Fasc_culo_U2-S1__Curso_Metodolog_as_activas_para_el_desarrol.pdf": {
+      "path": "G:\\IA\\embeddings_images\\repositorio\\Fasc_culo_U2-S1__Curso_Metodolog_as_activas_para_el_desarrol.pdf",
+      "indexed": true,
+      "indexed_at": "2026-04-24T17:11:37",
+      "pages": 21,
+      "categoria": "Recursos de Acciones Formativas",
+      "sub_categoria": "Conocimientos pedagógicos y disciplinares",
+      "sub_categoria_2": "Programa de Actualización docente",
+      "tipo_recurso": "Fascículo",
+      "titulo": "Fascículo U2-S1: Curso Metodologías activas para el desarrollo de habilidades de pensamiento de orden superior",
+      "modalidad": "Educación Básica",
+      "ruta_banner": "Resources\\Files\\acfm\\20250827194217_sifods_docente-fondo (1) (1).png",
+      "autor": "Perú. Ministerio de Educación",
+      "anio_edicion": "2025",
+      "lengua_idioma": "Castellano",
+      "fecha_publicacion": "28/08/2025",
+      "tipo_enlace": "PDF",
+      "enlace": "https://formacionenservicio.minedu.gob.pe/cursos_2025/Programa-OAM/fasciculos_PAD_OAM/Curso2_fasciculo_U2S1.pdf",
+      "resumen": "El curso tiene como propósito fortalecer las competencias profesionales de los docentes en la conducción del proceso de enseñanza y aprendizaje a través del uso de metodologías activas para promover en los estudiantes habilidades de pensamiento de orden superior.",
+      "estado": "Activo",
+      "estrategia": "Oferta abierta y masiva"
+    }
+  }
+}
